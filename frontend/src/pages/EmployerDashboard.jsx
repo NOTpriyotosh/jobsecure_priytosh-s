@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+
+import JobPostForm from '../components/JobPostForm';
+import { useState } from 'react';
+import JobStatusButton from '../components/JobStatusButton';
 
 const EmployerDashboard = () => {
+  const { user, loading } = useUser();
+  const navigate = useNavigate();
+  const [showJobForm, setShowJobForm] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+      } else if (user.role !== 'Employer') {
+        navigate('/');
+      }
+    }
+  }, [user, loading, navigate]);
   // Mock data (replace with real data later)
   const employer = {
-    name: "Tech Solutions Inc",
+    name: user?.username || "Tech Solutions Inc",
     rating: 4.9,
     totalJobs: 15,
     activeJobs: 3
@@ -28,18 +47,36 @@ const EmployerDashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 pt-20">
+      {/* Job Post Form Modal */}
+      {showJobForm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="relative">
+            <JobPostForm
+              onClose={() => setShowJobForm(false)}
+              onSubmit={(jobData) => {
+                // TODO: Replace with API call
+                console.log('Job posted:', jobData);
+                setShowJobForm(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
       {/* Employer Profile Section */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-200">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">{employer.name}</h1>
+            <h1 className="text-2xl font-bold dark:text-white">{employer.name}</h1>
             <div className="flex items-center mt-2">
               <span className="text-yellow-400">★</span>
               <span className="ml-1">{employer.rating}</span>
               <span className="ml-4">{employer.totalJobs} total jobs posted</span>
             </div>
           </div>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+          <button
+            className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
+            onClick={() => setShowJobForm(true)}
+          >
             Post New Job
           </button>
         </div>
@@ -50,11 +87,11 @@ const EmployerDashboard = () => {
         <h2 className="text-xl font-bold mb-4">Your Active Jobs</h2>
         <div className="space-y-4">
           {postedJobs.map(job => (
-            <div key={job.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-lg font-semibold">{job.title}</h3>
-                  <p className="text-gray-600 mt-1">Budget: {job.budget}</p>
+                  <h3 className="text-lg font-semibold dark:text-white">{job.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">Budget: {job.budget}</p>
                 </div>
                 <div className="text-right">
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
@@ -66,10 +103,8 @@ const EmployerDashboard = () => {
                 </div>
               </div>
               <div className="mt-4 flex space-x-4">
-                <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded hover:bg-blue-200">
-                  View Applications
-                </button>
-                <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded hover:bg-gray-200">
+                <JobStatusButton jobId={job.id || job._id} />
+                <button className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
                   Edit Job
                 </button>
               </div>

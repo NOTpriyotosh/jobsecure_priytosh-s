@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+import RecentlyPostedJobs from '../components/RecentlyPostedJobs';
 
 const FreelancerDashboard = () => {
+  const { user, loading } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+      } else if (user.role !== 'Freelancer') {
+        navigate('/');
+      }
+    }
+  }, [user, loading, navigate]);
   // Mock data (replace with real data later)
+  // Use real user info if available, fallback to mock for demo
   const freelancer = {
-    name: "John Doe",
-    photo: "https://via.placeholder.com/150",
+    name: user?.username || "John Doe",
+    photo: user?.photo || "https://via.placeholder.com/150",
     rating: 4.8,
     completedJobs: 24,
     feedback: [
@@ -33,7 +49,8 @@ const FreelancerDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8 pt-20">
       {/* Freelancer Profile Section */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-200"> 
+
         <div className="flex items-center space-x-4">
           <img 
             src={freelancer.photo} 
@@ -41,7 +58,7 @@ const FreelancerDashboard = () => {
             className="w-24 h-24 rounded-full object-cover"
           />
           <div>
-            <h1 className="text-2xl font-bold">{freelancer.name}</h1>
+            <h1 className="text-2xl font-bold dark:text-white">{freelancer.name}</h1>
             <div className="flex items-center mt-2">
               <span className="text-yellow-400">★</span>
               <span className="ml-1">{freelancer.rating}</span>
@@ -51,17 +68,19 @@ const FreelancerDashboard = () => {
         </div>
       </div>
 
+      {/* Recently Posted Jobs Section */}
+      <RecentlyPostedJobs />
       {/* Suggested Jobs Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Suggested Jobs</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {suggestedJobs.map(job => (
-            <div key={job.id} className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold">{job.title}</h3>
-              <p className="text-gray-600 mt-2">{job.company}</p>
-              <p className="text-green-600 font-semibold mt-2">{job.budget}</p>
-              <p className="text-gray-700 mt-2 line-clamp-2">{job.description}</p>
-              <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200">
+              <h3 className="text-lg font-semibold dark:text-white">{job.title}</h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">{job.company}</p>
+              <p className="text-green-600 dark:text-green-400 font-semibold mt-2">{job.budget}</p>
+              <p className="text-gray-700 dark:text-gray-300 mt-2 line-clamp-2">{job.description}</p>
+              <button className="mt-4 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
                 Apply Now
               </button>
             </div>
